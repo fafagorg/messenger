@@ -11,15 +11,17 @@ services:
         target: /data
   express: 
     build:
-      context: ./
+      context: .
       dockerfile: Dockerfile
     container_name: express
+    command: "nodemon  --watch index.js"
     ports: 
-      - "8080:3000"
+      - "3001:3001"
+      - "3002:3002"
     volumes:
       - type: bind
-        source: ./
-        target: /node-api
+        source: .
+        target: /usr/app
 volumes:
   redis-data:
 

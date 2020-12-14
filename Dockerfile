@@ -1,6 +1,7 @@
 FROM node:15.3.0-alpine3.10
 
-WORKDIR /node-api
+WORKDIR /usr/app
 COPY . .
 RUN npm install
-ENTRYPOINT node index.js
+RUN npm install -g nodemon
+CMD ["node", "index.js"]
