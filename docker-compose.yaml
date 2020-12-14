@@ -12,9 +12,8 @@ services:
   express: 
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile_local
     container_name: express
-    command: "nodemon  --watch index.js"
     ports: 
       - "3001:3001"
       - "3002:3002"
