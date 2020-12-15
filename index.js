@@ -35,9 +35,9 @@ exports.app = app;
 // socket
 const io = require('socket.io')(process.env.SOCKET_PORT, {transports: ['websocket']});
 const jwt = require('jsonwebtoken');
-const redis = require("redis");
+const Redis = require("ioredis");
+const redis = new Redis(6379, process.env.REDIS_HOST);
 
-const clientRedis = redis.createClient(6379, process.env.REDIS_HOST);
 
 // Authentication middleware
 io.of('/chat').use((socket, next) => {
@@ -54,24 +54,30 @@ io.of('/chat').use((socket, next) => {
 })
 
 // Connection authenticated 
- io.of('/chat').on('connection', function(socket) {
-  clientRedis.sadd(`user:${socket.decoded.userId}`, JSON.stringify({ socketId: socket.id }));
+ io.of('/chat').on('connection', async function(socket) {
+  redis.sadd(`user:${socket.decoded.userId}`, JSON.stringify({ socketId: socket.id }));
 
-  socket.on('message', function(data) {
+  socket.on('send_message', async function(data) {
     // emit message to the user (id)
-    let socketIds = clientRedis.smembers(`user:${data.userId}`);
+    let socketIds = await redis.smembers(`user:${data.userId}`);
     socketIds.map(x => {
        io.of('/chat').to(x.socketId).emit('message', data.content);
     });
 
-    // create messages in redis
+    // create messages and room in redis
+    await redis.rpush(`room:${data.roomId}:messages`, JSON.stringify({ userId: data.userId, message_content: data.content }));
+    
+    await redis.zadd(`user:${socket.decoded.userId}:${data.roomId}`, Date.now(), JSON.stringify({last_message: data.content, product: {name: null, id: null, image: null}}));
+    await redis.zadd(`user:${data.userId}:${data.roomId}`, Date.now(), JSON.stringify({last_message: data.content, product: {name: null, id: null, image: null}}));
+    
+    await redis.sadd(`user:${data.userId}:room`, data.roomId);
+    await redis.sadd(`user:${socket.decoded.userId}:room`, data.roomId);
 
-    // modify the last message 
 
   });
 
   socket.on('disconnect', () => {
-   clientRedis.srem(`user:${socket.decoded.userId}`, JSON.stringify({ socketId: socket.id }));
+   redis.srem(`user:${socket.decoded.userId}`, JSON.stringify({ socketId: socket.id }));
   });
 });
 
