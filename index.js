@@ -61,7 +61,13 @@ io.of('/chat').use((socket, next) => {
     // emit message to the user (id)
     let socketIds = await redis.smembers(`user:${data.userId}`);
     socketIds.map(x => {
-       io.of('/chat').to(x.socketId).emit('message', data.content);
+       x = JSON.parse(x)
+       io.of('/chat').to(x.socketId).emit('private_message', {
+         content: data.content,
+         roomId: data.roomId,
+         userId: data.userId,
+         image: null,
+       });
     });
 
     // create messages and room in redis
@@ -72,8 +78,6 @@ io.of('/chat').use((socket, next) => {
     
     await redis.sadd(`user:${data.userId}:room`, data.roomId);
     await redis.sadd(`user:${socket.decoded.userId}:room`, data.roomId);
-
-
   });
 
   socket.on('disconnect', () => {
