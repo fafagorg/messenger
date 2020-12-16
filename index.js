@@ -2,6 +2,7 @@ const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const room = require("./room");
 if (!process.env.NODE_ENV) dotenv.config();
 
 const app = express();
@@ -24,6 +25,7 @@ app.listen(port, () => {
 
 exports.app = app;
 
+
 // socket
 const io = require("socket.io")(process.env.SOCKET_PORT, {
   transports: ["websocket"],
@@ -32,13 +34,23 @@ const jwt = require("jsonwebtoken");
 const Redis = require("ioredis");
 const redis = new Redis(6379, process.env.REDIS_HOST);
 
+
+
+app.use((req, res, next) => {
+  req.redis = redis
+  next();
+})
+app.use("/messenger/room", room)
+
+
+
 // Authentication middleware
 io.of("/chat").use((socket, next) => {
   if (!(socket.handshake.query && socket.handshake.query.token)) {
     next(new Error("Authentication error"));
   }
 
-  let token = socket.handshake.query.token;
+  let token = socket.handshake.query.token.replace('Bearer ');
   jwt.verify(token, process.env.JWT_SECRET, function (err, decoded) {
     if (err)
       return next(new Error("Authenticnpm install -g eslintation error"));
@@ -73,25 +85,18 @@ io.of("/chat").on("connection", async function (socket) {
       JSON.stringify({ userId: data.userId, message_content: data.content })
     );
 
-    await redis.zadd(
-      `user:${socket.decoded.userId}:${data.roomId}`,
-      Date.now(),
-      JSON.stringify({
-        last_message: data.content,
-        product: { name: null, id: null, image: null },
-      })
-    );
-    await redis.zadd(
-      `user:${data.userId}:${data.roomId}`,
-      Date.now(),
-      JSON.stringify({
-        last_message: data.content,
-        product: { name: null, id: null, image: null },
-      })
-    );
+    [socket.decoded.userId, data.userId].map( async (userId) => {
+      await redis.set(
+        `user:${userId}:room:${data.roomId}`,
+        JSON.stringify({
+          last_message: data.content,
+          product: { name: null, id: null, image: null },
+        })
+      );
+    })
 
-    await redis.sadd(`user:${data.userId}:room`, data.roomId);
-    await redis.sadd(`user:${socket.decoded.userId}:room`, data.roomId);
+    await redis.zadd(`user:${data.userId}:room`, Date.now(), data.roomId);
+    await redis.zadd(`user:${socket.decoded.userId}:room`, Date.now(), data.roomId);
   });
 
   socket.on("disconnect", () => {
