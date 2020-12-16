@@ -38,25 +38,22 @@ router.use((req, res, next) => {
 })
 
 router.get('/', async function(req, res) {
-  let result = [];
   let roomsIds = await req.redis.zrevrangebyscore(`user:${req.decoded.userId}:room`, "+inf", "-inf");
-  console.log(roomsIds)
   
-  roomsIds.map( async (roomId) => {
+  let result = roomsIds.map( async (roomId) => {
     let room_data = await req.redis.get(`user:${req.decoded.userId}:room:${roomId}`); // mirar si al no poner rango devuelve todo ordenado y como una lista
     room_data = JSON.parse(room_data)
-    console.log(room_data)
 
-    result.push({
+    return {
       roomId: roomId,
       lastMessage: room_data.last_message,
       user: {
         userId: req.decoded.userId,
         image: 'a',
       }
-    })
+    }
   });
-
+  result = await Promise.all(result)
 
   res.send(result);
 });
