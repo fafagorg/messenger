@@ -2,26 +2,6 @@
 var express = require('express');
 var router = express.Router();
 const jwt = require("jsonwebtoken");
-// return [
-//   {
-//     roomId: "1-2-3",
-//     lastMessage: "Hola, que tal?",
-//     user: {
-//       userId: 1,
-//       image:
-//         "https://3.bp.blogspot.com/-7dGg2SxOnPc/W58gx5zIm3I/AAAAAAAAFCM/ov25hkvKW0I0B-qruNE4_7wP0v7tiW5sQCLcBGAs/s1600/favicon.png",
-//     },
-//   },
-//   {
-//     roomId: "1-2-4",
-//     lastMessage: "Hola, que tal?",
-//     user: {
-//       userId: 1,
-//       image:
-//         "https://3.bp.blogspot.com/-7dGg2SxOnPc/W58gx5zIm3I/AAAAAAAAFCM/ov25hkvKW0I0B-qruNE4_7wP0v7tiW5sQCLcBGAs/s1600/favicon.png",
-//     },
-//   },
-// ];
 
 // get rooms logued user
 router.use((req, res, next) => {
@@ -42,20 +22,43 @@ router.get('/', async function(req, res) {
   
   let result = roomsIds.map( async (roomId) => {
     let room_data = await req.redis.get(`user:${req.decoded.userId}:room:${roomId}`); // mirar si al no poner rango devuelve todo ordenado y como una lista
-    room_data = JSON.parse(room_data)
+    room_data = JSON.parse(room_data) || {}
 
     return {
       roomId: roomId,
-      lastMessage: room_data.last_message,
+      lastMessage: room_data.last_message || null,
       user: {
         userId: req.decoded.userId,
-        image: 'a',
+        image: null,
       }
     }
   });
   result = await Promise.all(result)
 
   res.send(result);
+});
+
+router.get('/:id', async function(req, res) {
+  let roomId = req.params.id
+  let messages = await req.redis.lrange(`room:${roomId}:messages`, 0, -1);
+  messages = messages.map((x) => {
+    x = JSON.parse(x)
+    return {
+      content: x.content,
+      userId: x.userId,
+      images: null,
+    }
+  })
+
+  res.send({
+    roomId: roomId,
+    user: {
+      userId: req.decoded.userId,
+      name: null,
+      image: null
+    },
+    messages: messages
+  });
 });
 
 // define the about route

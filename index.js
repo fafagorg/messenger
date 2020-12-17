@@ -82,7 +82,7 @@ io.of("/chat").on("connection", async function (socket) {
     // create messages and room in redis
     await redis.rpush(
       `room:${data.roomId}:messages`,
-      JSON.stringify({ userId: data.userId, message_content: data.content })
+      JSON.stringify({ userId: data.userId, content: data.content })
     );
 
     [socket.decoded.userId, data.userId].map( async (userId) => {
