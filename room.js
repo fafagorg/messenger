@@ -1,20 +1,23 @@
 
-var express = require('express');
-var router = express.Router();
-const jwt = require("jsonwebtoken");
+const express = require('express');
+const router = express.Router();
+const commons = require("./commons");
 
 // get rooms logued user
-router.use((req, res, next) => {
+router.use(async (req, res, next) => {
   if (!req.headers.authorization) {
-    res.sendStatus(401);
+    next(new Error("Authentication error"));
   }
 
   let token = req.headers.authorization.replace('Bearer ', '');
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (err) return res.sendStatus(403);
+  try {
+    let decoded = await commons.decodedJWT(token)
+    console.log(decoded)
     req.decoded = decoded;
     next();
-  });
+  } catch (error) {
+    return res.sendStatus(403);
+  }
 })
 
 router.get('/', async function(req, res) {

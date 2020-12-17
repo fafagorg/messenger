@@ -3,6 +3,7 @@ const morgan = require("morgan");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const room = require("./room");
+const commons = require("./commons");
 if (!process.env.NODE_ENV) dotenv.config();
 
 const app = express();
@@ -40,23 +41,24 @@ app.use((req, res, next) => {
   req.redis = redis
   next();
 })
-app.use("v1/messenger/room", room)
+app.use("/v1/messenger/room", room)
 
 
 
 // Authentication middleware
-io.of("/chat").use((socket, next) => {
+io.of("/chat").use(async (socket, next) => {
   if (!(socket.handshake.query && socket.handshake.query.token)) {
     next(new Error("Authentication error"));
   }
 
-  let token = socket.handshake.query.token.replace('Bearer ');
-  jwt.verify(token, process.env.JWT_SECRET, function (err, decoded) {
-    if (err)
-      return next(new Error("Authention error"));
+  let token = socket.handshake.query.token.replace('Bearer ', '');
+  try {
+    let decoded = await commons.decodedJWT(token)
     socket.decoded = decoded;
     next();
-  });
+  } catch (error) {
+    return next(new Error("Authentication error"));
+  }
 });
 
 // Connection authenticated
