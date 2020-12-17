@@ -2,9 +2,11 @@ const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const room = require("./room");
+const router = new express.Router();
 const commons = require("./commons");
 if (!process.env.NODE_ENV) dotenv.config();
+
+
 
 const app = express();
 
@@ -17,6 +19,26 @@ app.use(
   })
 );
 app.use(morgan("common"));
+
+router.use(async (req, res, next) => {
+  if (!req.headers.authorization) {
+    next(new Error("Authentication error"));
+  }
+
+  let token = req.headers.authorization.replace('Bearer ', '');
+  try {
+    let decoded = await commons.decodedJWT(token)
+    console.log(decoded)
+    req.decoded = decoded;
+    next();
+  } catch (error) {
+    return res.sendStatus(403);
+  }
+});
+
+// routers
+const roomRouter = require('./routers/room');
+app.use("v1/messenger/room", roomRouter);
 
 // server
 const port = process.env.API_PORT || 3001;
@@ -36,13 +58,10 @@ const Redis = require("ioredis");
 const redis = new Redis(6379, process.env.REDIS_HOST);
 
 
-
 app.use((req, res, next) => {
   req.redis = redis
   next();
 })
-app.use("/v1/messenger/room", room)
-
 
 
 // Authentication middleware
