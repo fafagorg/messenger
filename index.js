@@ -40,7 +40,7 @@ app.use((req, res, next) => {
   req.redis = redis
   next();
 })
-app.use("/messenger/room", room)
+app.use("v1/messenger/room", room)
 
 
 
@@ -53,7 +53,7 @@ io.of("/chat").use((socket, next) => {
   let token = socket.handshake.query.token.replace('Bearer ');
   jwt.verify(token, process.env.JWT_SECRET, function (err, decoded) {
     if (err)
-      return next(new Error("Authenticnpm install -g eslintation error"));
+      return next(new Error("Authention error"));
     socket.decoded = decoded;
     next();
   });

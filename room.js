@@ -21,7 +21,7 @@ router.get('/', async function(req, res) {
   let roomsIds = await req.redis.zrevrangebyscore(`user:${req.decoded.userId}:room`, "+inf", "-inf");
   
   let result = roomsIds.map( async (roomId) => {
-    let room_data = await req.redis.get(`user:${req.decoded.userId}:room:${roomId}`); // mirar si al no poner rango devuelve todo ordenado y como una lista
+    let room_data = await req.redis.get(`user:${req.decoded.userId}:room:${roomId}`); 
     room_data = JSON.parse(room_data) || {}
 
     return {
@@ -35,11 +35,16 @@ router.get('/', async function(req, res) {
   });
   result = await Promise.all(result)
 
-  res.send(result);
+  res.status(200).send(result);
 });
 
 router.get('/:id', async function(req, res) {
   let roomId = req.params.id
+
+  if (!(roomId.split("-")[0] == req.decoded.userId || roomId.split("-")[1] == req.decoded.userId)) {
+    return res.status(401).send("Invalid params, You cannot access other users' rooms ");
+  }
+
   let messages = await req.redis.lrange(`room:${roomId}:messages`, 0, -1);
   messages = messages.map((x) => {
     x = JSON.parse(x)
@@ -50,7 +55,7 @@ router.get('/:id', async function(req, res) {
     }
   })
 
-  res.send({
+  res.status(200).send({
     roomId: roomId,
     user: {
       userId: req.decoded.userId,
@@ -59,11 +64,6 @@ router.get('/:id', async function(req, res) {
     },
     messages: messages
   });
-});
-
-// define the about route
-router.get('/about', function(req, res) {
-  res.send('About birds');
 });
 
 module.exports = router;
