@@ -11,7 +11,6 @@ const decodedJWT = async (token) => {
             "Content-Type": "application/json"
         }
     });
-    console.log(response)
     response.data.userId = Number(response.data.userId)
     return response.data
 }
