@@ -4,10 +4,19 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const commons = require("./commons");
 const Redis = require("ioredis");
+const app = express();
+const http = require('http').createServer(app);
+const io = require('socket.io')(http, {
+  transports: ["websocket"],
+});
 if (!process.env.NODE_ENV) dotenv.config();
 
-const app = express();
-const redis = new Redis(6379, process.env.REDIS_HOST);
+let password = (!process.env.NODE_ENV) ? undefined : process.env.REDIS_PASSWORD;
+const redis = new Redis({
+  port: 6379, // Redis port
+  host:  process.env.REDIS_HOST, // Redis host
+  password: password,
+})
 
 // middleware
 app.use(express.urlencoded({ extended: true }));
@@ -43,8 +52,8 @@ const roomRouter = require('./routers/room');
 app.use("/v1/messenger/room", roomRouter);
 
 // server
-const port = process.env.API_PORT || 3001;
-app.listen(port, () => {
+const port = process.env.APP_PORT || 3001;
+http.listen(port, () => {
   console.log(`Listening at port ${port}`);
 });
 
@@ -80,12 +89,6 @@ exports.app = app;
 
 
 
-
-
-// socket
-const io = require("socket.io")(process.env.SOCKET_PORT, {
-  transports: ["websocket"],
-});
 
 
 // Authentication middleware
@@ -127,7 +130,7 @@ io.of("/chat").on("connection", async function (socket) {
     // create messages and room in redis
     await redis.rpush(
       `room:${data.roomId}:messages`,
-      JSON.stringify({ userId: data.userId, content: data.content })
+      JSON.stringify({ userId: data.userId, content: data.content, readed: false })
     );
 
     [socket.decoded.userId, data.userId].map( async (userId) => {
