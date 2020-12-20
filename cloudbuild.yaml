@@ -1,6 +1,6 @@
 steps:
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '--file=Dockerfile_production', '--tag=gcr.io/fis-us/messenger:${COMMIT_SHA}']
+    args: ['build', '--file=Dockerfile_production', '--tag=gcr.io/fis-us/messenger:${COMMIT_SHA}', '.']
 
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/fis-us/messenger:${COMMIT_SHA}']
