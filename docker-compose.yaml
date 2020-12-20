@@ -1,0 +1,25 @@
+version: "3.7"
+services:
+  redis:
+    image: redis:6.0.9-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - type: volume
+        source: redis-data
+        target: /data
+  express:
+    build:
+      context: .
+      dockerfile: Dockerfile_local
+    container_name: express
+    ports:
+      - "3001:3001"
+      - "3002:3002"
+    volumes:
+      - type: bind
+        source: .
+        target: /usr/app
+volumes:
+  redis-data:

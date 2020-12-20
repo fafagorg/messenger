@@ -1,0 +1,12 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['docker', 'build', '--file=Dockerfile_production', '--tag=gcr.io/fis-us/messenger:${COMMIT_SHA}']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['docker', 'push', 'gcr.io/fis-us/messenger:${COMMIT_SHA}']
+
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args: ['gcloud', 'run', 'deploy', 'messenger-${BRANCH_NAME}', '--port=80', '--image=gcr.io/fis-us/messenger:${COMMIT_SHA}', '--min-instances=0', '--max-instances=2', '--set-env-vars=[HOST_AUTH=https://fafago-auth-test.herokuapp.com, API_PORT=3001, SOCKET_PORT=3002, REDIS_HOST=redis]']
+
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args: ['gcloud', 'run', 'deploy', 'redis-${BRANCH_NAME}', '--image=redis:6.0.9-alpine', '--port=6379', '--min-instances=0', '--max-instances=2']
