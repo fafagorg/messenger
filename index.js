@@ -130,11 +130,6 @@ io.of("/chat").on("connection", async function (socket) {
         JSON.stringify({
           last_message: data.content,
           roomName: 'playstation 5',
-          user: { 
-            id: null, 
-            name: 'nombre de usuario', 
-            image: 'https://img2.freepng.es/20180920/yko/kisspng-computer-icons-portable-network-graphics-avatar-ic-5ba3c66df14d32.3051789815374598219884.jpg'
-          },
         })
       );
     })
@@ -144,7 +139,6 @@ io.of("/chat").on("connection", async function (socket) {
   });
 
   socket.on("disconnect", () => {
-    console.log('disconnect disconnect disconnect disconnect disconnect disconnect')
     redis.srem(
       `user:${socket.decoded.userId}`,
       JSON.stringify({ socketId: socket.id })
