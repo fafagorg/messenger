@@ -33,7 +33,7 @@ app.use((req, res, next) => {
 })
 
 app.use(async (req, res, next) => {
-  if (!req.headers.authorization) {
+  if (!req.headers.authorization || req.headers.authorization==undefined) {
     next(new Error("Authentication error"));
   }
 
@@ -43,6 +43,7 @@ app.use(async (req, res, next) => {
     req.decoded = decoded;
     next();
   } catch (error) {
+    console.log('Authentication error: ', error)
     return res.sendStatus(403);
   }
 });
@@ -78,19 +79,6 @@ exports.app = app;
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Authentication middleware
 io.of("/chat").use(async (socket, next) => {
   if (!(socket.handshake.query && socket.handshake.query.token)) {
@@ -103,6 +91,7 @@ io.of("/chat").use(async (socket, next) => {
     socket.decoded = decoded;
     next();
   } catch (error) {
+    console.log(error)
     return next(new Error("Authentication error"));
   }
 });
@@ -123,14 +112,16 @@ io.of("/chat").on("connection", async function (socket) {
         content: data.content,
         roomId: data.roomId,
         userId: data.userId,
-        image: null,
       });
     });
 
     // create messages and room in redis
     await redis.rpush(
       `room:${data.roomId}:messages`,
-      JSON.stringify({ userId: data.userId, content: data.content, readed: false })
+      JSON.stringify({
+        userId: data.userId,
+        content: data.content,
+      })
     );
 
     [socket.decoded.userId, data.userId].map( async (userId) => {
@@ -138,7 +129,12 @@ io.of("/chat").on("connection", async function (socket) {
         `user:${userId}:room:${data.roomId}`,
         JSON.stringify({
           last_message: data.content,
-          product: { name: null, id: null, image: null },
+          roomName: 'playstation 5',
+          user: { 
+            id: null, 
+            name: 'nombre de usuario', 
+            image: 'https://img2.freepng.es/20180920/yko/kisspng-computer-icons-portable-network-graphics-avatar-ic-5ba3c66df14d32.3051789815374598219884.jpg'
+          },
         })
       );
     })
@@ -148,6 +144,7 @@ io.of("/chat").on("connection", async function (socket) {
   });
 
   socket.on("disconnect", () => {
+    console.log('disconnect disconnect disconnect disconnect disconnect disconnect')
     redis.srem(
       `user:${socket.decoded.userId}`,
       JSON.stringify({ socketId: socket.id })
