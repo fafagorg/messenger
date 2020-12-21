@@ -1,0 +1,20 @@
+steps:
+  - name: "bhgedigital/envsubst"
+    entrypoint: /bin/sh
+    args:
+      - '-c'
+      - |
+        /usr/bin/envsubst < app-${BRANCH_NAME}.yaml > app-${BRANCH_NAME}_tmp.yaml
+    env:
+      - "REDIS_PASSWORD=$_REDIS_PASSWORD"
+
+  # Verify
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: /bin/sh
+    args:
+      - '-c'
+      - |
+        cat app-${BRANCH_NAME}_tmp.yaml
+
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args: ['app', 'deploy', 'app-${BRANCH_NAME}_tmp.yaml', '--version=messenger-${BRANCH_NAME}']
