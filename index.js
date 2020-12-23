@@ -31,14 +31,13 @@ app.use((req, res, next) => {
   req.redis = redis
   next();
 })
-
-app.use(async (req, res, next) => {
-  if (!req.headers.authorization || req.headers.authorization==undefined) {
+app.use("/v1/messenger/room", async (req, res, next) => {
+  if (!req.headers.authorization || req.headers.authorization == undefined) {
     next(new Error("Authentication error"));
   }
 
-  let token = req.headers.authorization.replace('Bearer ', '');
   try {
+    let token = req.headers.authorization.replace('Bearer ', '');
     let decoded = await commons.decodedJWT(token)
     req.decoded = decoded;
     next();
@@ -48,7 +47,12 @@ app.use(async (req, res, next) => {
   }
 });
 
-// routers
+// routers /
+app.get('/', (req, res) => {
+  return res.sendStatus(200)
+})
+
+// routers room
 const roomRouter = require('./routers/room');
 app.use("/v1/messenger/room", roomRouter);
 

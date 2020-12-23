@@ -17,4 +17,4 @@ steps:
         cat app-${BRANCH_NAME}_tmp.yaml
 
   - name: 'gcr.io/cloud-builders/gcloud'
-    args: ['app', 'deploy', 'app-${BRANCH_NAME}_tmp.yaml', '--version=messenger-${BRANCH_NAME}']
+    args: ['app', 'deploy', 'app-${BRANCH_NAME}_tmp.yaml', '--no-stop-previous-version', '--version=messenger-${BRANCH_NAME}']
