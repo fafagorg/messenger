@@ -6,7 +6,21 @@ exports.getRoom = async (req, res) => {
         let userId = req.decoded.userId
         let redis = req.redis
 
+        // cache
+        let cache = await redis.get(`cache:/v1/messenger/room:user:${userId}`);
+        if (cache != null){
+            console.log('Response cache')
+            return res.status(200).send(JSON.parse(cache));
+        }
+
         let result = await roomService.getRoom(userId, redis);
+        
+        // cache
+        await redis.set(
+            `cache:/v1/messenger/room:user:${userId}`,
+            JSON.stringify(result)
+        );
+        
         return res.status(200).send(result);
     } catch (error) {
         console.log(error)
@@ -28,7 +42,21 @@ exports.getRoomById = async (req, res) => {
             return new Error({error: 401, message: "Invalid params, You cannot access other users' rooms "});
         }
     
+        // cache
+        let cache = await redis.get(`cache:/v1/messenger/room/${roomId}:user:${userId}`);
+        if (cache != null){
+            console.log('Response cache')
+            return res.status(200).send(JSON.parse(cache));
+        }
+
         let result = await roomService.getRoomById(roomId, userId, redis);
+
+        // cache
+        await redis.set(
+            `cache:/v1/messenger/room/${roomId}:user:${userId}`,
+            JSON.stringify(result)
+        );
+
         return res.status(200).send(result);
     } catch (error) {
         console.log(error)

@@ -153,6 +153,10 @@ io.of("/chat").on("connection", async function (socket) {
           roomName: roomName,
         })
       );
+
+      // cache 
+      await redis.del(`cache:/v1/messenger/room:user:${userId}`);
+      await redis.del(`cache:/v1/messenger/room/${data.roomId}:user:${userId}`);
     })
 
     await redis.zadd(`user:${data.userId}:room`, Date.now(), data.roomId);
