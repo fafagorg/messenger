@@ -5,9 +5,15 @@ manual_scaling:
   instances: 1
 
 env_variables:
-  HOST_AUTH: "https://fafago-auth-test.herokuapp.com"
+  HOST_AUTH: https://fafago-auth-test.herokuapp.com
   APP_PORT: 8080
   NODE_ENV: production
   REDIS_HOST: 34.76.24.105
   REDIS_PORT: 6377
   REDIS_PASSWORD: $REDIS_PASSWORD
+  
+handlers:
+- url: /
+  static_dir: /
+  http_headers:
+    Access-Control-Allow-Origin: '*'
