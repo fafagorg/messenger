@@ -64,7 +64,7 @@ http.listen(port, () => {
   console.log(`Listening at port ${port}`);
 });
 
-exports.app = app;
+module.exports = app;
 
 
 

@@ -43,7 +43,7 @@ exports.getRoomById = async (req, res) => {
 
         // check your owner of the room
         if (!(roomId.split("-")[0] == userId || roomId.split("-")[1] == userId)) {
-            throw {error: 401, message: "Invalid params, You cannot access other users' rooms "};
+            throw {status: 401, message: "Invalid params, You cannot access other users' rooms "};
         }
 
         // check product exist
@@ -78,7 +78,7 @@ exports.getRoomById = async (req, res) => {
 
         return res.status(200).send(result);
     } catch (error) {
-        console.log(error)
+        console.log(JSON.stringify(error))
         if (error.status && error.message) {
             return res.status(error.status).send({error: error.message});
         }
@@ -94,7 +94,7 @@ exports.deleteRoomById = async (req, res) => {
         let redis = req.redis
         
         if (!(roomId.split("-")[0] == userId || roomId.split("-")[1] == userId)) {
-            return new Error({error: 401, message: "Invalid params, You cannot manage other users' rooms "});
+            throw {status: 401, message: "Invalid params, You cannot manage other users' rooms "};
         }
     
         await roomService.deleteRoomById(roomId, userId, redis);
@@ -117,9 +117,9 @@ exports.updateRoomName = async (req, res) => {
         let redis = req.redis
         
         if (!(roomId.split("-")[0] == userId || roomId.split("-")[1] == userId)) {
-            return new Error({error: 401, message: "Invalid params, You cannot manage other users' rooms "});
+            throw {status: 401, message: "Invalid params, You cannot manage other users' rooms "};
         }
-        if (!req.body.roomName) return new Error({error: 401, message: "Invalid params, You must provide a new room name"});
+        if (!req.body.roomName) throw {status: 401, message: "Invalid params, You must provide a new room name"};
     
         await roomService.updateRoomName(roomId, userId, roomName, redis);
         return res.status(200).send({result: "Success"});
