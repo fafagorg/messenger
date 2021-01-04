@@ -41,6 +41,7 @@ app.use("/v1/messenger/room", async (req, res, next) => {
     let token = req.headers.authorization.replace('Bearer ', '');
     let decoded = await commons.decodedJWT(token)
     req.decoded = decoded;
+    req.decoded.token = token;
     next();
   } catch (error) {
     console.log('Authentication error: ', error)

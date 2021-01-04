@@ -1,4 +1,5 @@
 const roomService = require('../services/room');
+const axios = require('axios');
 
 // get all rooms login user 
 exports.getRoom = async (req, res) => {
@@ -37,9 +38,27 @@ exports.getRoomById = async (req, res) => {
         let roomId = req.params.id
         let userId = req.decoded.userId
         let redis = req.redis
+        // comprobar q la otra persona existe -> integrase con cliente
         
+
+        // check your owner of the room
         if (!(roomId.split("-")[0] == userId || roomId.split("-")[1] == userId)) {
-            return new Error({error: 401, message: "Invalid params, You cannot access other users' rooms "});
+            throw {error: 401, message: "Invalid params, You cannot access other users' rooms "};
+        }
+
+        // check product exist
+        try{
+            await axios({
+              url: `${process.env.HOST_PRODUCT}/api/products/${roomId.split("-")[2]}`,
+              method: 'GET',
+              headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${req.decoded.token}`
+              }
+            });
+        } catch (error) {
+            console.log(error)
+            throw {status: 404, message: 'Invalid data'}
         }
     
         // cache
