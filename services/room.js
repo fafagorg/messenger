@@ -20,7 +20,7 @@ exports.getRoom = async function(userId, redis) {
 exports.getRoomById = async function(roomId, userId, redis) {
   let messages = await redis.lrange(`room:${roomId}:messages`, 0, -1);
   if (messages.length == 0) {
-    return res.status(404).send({})
+    throw {status: 404, message:"Room does not exist"}
   }
 
   messages = messages.map((x) => {
