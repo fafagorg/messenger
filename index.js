@@ -4,10 +4,19 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const commons = require("./commons");
 const Redis = require("ioredis");
+const app = express();
+const http = require('http').createServer(app);
+const io = require('socket.io')(http, {
+  transports: ["websocket"],
+});
 if (!process.env.NODE_ENV) dotenv.config();
 
-const app = express();
-const redis = new Redis(6379, process.env.REDIS_HOST);
+let password = (!process.env.NODE_ENV) ? undefined : process.env.REDIS_PASSWORD;
+const redis = new Redis({
+  port: process.env.REDIS_PORT, // Redis port
+  host:  process.env.REDIS_HOST, // Redis host
+  password: password,
+})
 
 // middleware
 app.use(express.urlencoded({ extended: true }));
@@ -22,29 +31,34 @@ app.use((req, res, next) => {
   req.redis = redis
   next();
 })
-
-app.use(async (req, res, next) => {
-  if (!req.headers.authorization) {
+app.use("/v1/messenger/room", async (req, res, next) => {
+  if (!req.headers.authorization || req.headers.authorization == undefined) {
     next(new Error("Authentication error"));
   }
 
-  let token = req.headers.authorization.replace('Bearer ', '');
   try {
+    let token = req.headers.authorization.replace('Bearer ', '');
     let decoded = await commons.decodedJWT(token)
     req.decoded = decoded;
     next();
   } catch (error) {
+    console.log('Authentication error: ', error)
     return res.sendStatus(403);
   }
 });
 
-// routers
+// routers /
+app.get('/', (req, res) => {
+  return res.sendStatus(200)
+})
+
+// routers room
 const roomRouter = require('./routers/room');
 app.use("/v1/messenger/room", roomRouter);
 
 // server
-const port = process.env.API_PORT || 3001;
-app.listen(port, () => {
+const port = process.env.APP_PORT || 3001;
+http.listen(port, () => {
   console.log(`Listening at port ${port}`);
 });
 
@@ -69,25 +83,6 @@ exports.app = app;
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-// socket
-const io = require("socket.io")(process.env.SOCKET_PORT, {
-  transports: ["websocket"],
-});
-
-
 // Authentication middleware
 io.of("/chat").use(async (socket, next) => {
   if (!(socket.handshake.query && socket.handshake.query.token)) {
@@ -100,6 +95,7 @@ io.of("/chat").use(async (socket, next) => {
     socket.decoded = decoded;
     next();
   } catch (error) {
+    console.log(error)
     return next(new Error("Authentication error"));
   }
 });
@@ -120,14 +116,16 @@ io.of("/chat").on("connection", async function (socket) {
         content: data.content,
         roomId: data.roomId,
         userId: data.userId,
-        image: null,
       });
     });
 
     // create messages and room in redis
     await redis.rpush(
       `room:${data.roomId}:messages`,
-      JSON.stringify({ userId: data.userId, content: data.content })
+      JSON.stringify({
+        userId: data.userId,
+        content: data.content,
+      })
     );
 
     [socket.decoded.userId, data.userId].map( async (userId) => {
@@ -135,7 +133,7 @@ io.of("/chat").on("connection", async function (socket) {
         `user:${userId}:room:${data.roomId}`,
         JSON.stringify({
           last_message: data.content,
-          product: { name: null, id: null, image: null },
+          roomName: 'playstation 5',
         })
       );
     })

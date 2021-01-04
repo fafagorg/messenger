@@ -4,15 +4,12 @@ exports.getRoom = async function(userId, redis) {
   
   let result = roomsIds.map( async (roomId) => {
     let room_data = await redis.get(`user:${userId}:room:${roomId}`); 
-    room_data = JSON.parse(room_data) || {}
+    room_data = JSON.parse(room_data)
 
     return {
       roomId: roomId,
-      lastMessage: room_data.last_message || null,
-      user: {
-        userId: userId,
-        image: null,
-      }
+      roomName: room_data.roomName,
+      lastMessage: room_data.last_message,
     }
   });
   result = await Promise.all(result)
@@ -31,17 +28,34 @@ exports.getRoomById = async function(roomId, userId, redis) {
     return {
       content: x.content,
       userId: x.userId,
-      images: null,
     }
   })
 
+  let room_data = await redis.get(`user:${userId}:room:${roomId}`); 
+  room_data = JSON.parse(room_data)
   return {
     roomId: roomId,
-    user: {
-      userId: userId,
-      name: null,
-      image: null
-    },
+    roomName: room_data.roomName,
     messages: messages
   };
+};
+
+exports.deleteRoomById = async function(roomId, userId, redis) {
+  let recipientUserId = (roomId.split("-")[0] == userId) ? roomId.split('-')[1] : roomId.split("-")[0];
+
+  await redis.del(`room:${roomId}:messages`);
+
+  await redis.del(`user:${recipientUserId}:room:${roomId}`);
+  await redis.zrem(`user:${recipientUserId}:room`, roomId);
+  
+  await redis.del(`user:${userId}:room:${roomId}`);
+  await redis.zrem(`user:${userId}:room`, roomId);
+
+};
+
+exports.updateRoomName = async function(roomId, userId, roomName, redis) {
+  let room = await redis.get(`user:${userId}:room:${roomId}`);
+  let data = JSON.parse(room)
+  data.roomName = roomName;
+  await redis.set(`user:${userId}:room:${roomId}`, JSON.stringify(data));
 };

@@ -1,0 +1,147 @@
+swagger: "2.0"
+info:
+  version: "1.0.0"
+  title: "Messenger API"
+host: "messenger-develop-dot-fis-us.ew.r.appspot.com"
+basePath: "/v1"
+tags:
+- name: "messenger"
+  description: "Everything about messenger"
+schemes:
+- "https"
+- "http"
+paths:
+  /v1/messenger/room:
+    get:
+      tags:
+      - "messenger"
+      summary: "Get all rooms from user logged"
+      operationId: "getRooms"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: A room object
+          schema:
+            type: object
+            properties:
+              roomId:
+                type: integer
+                description: The room id
+              roomName:
+                type: string
+                description: The room name
+              lastMessage:
+                type: string
+                description: Thelast message
+      security:
+        - Bearer: []
+        
+  /v1/messenger/room/{id}:
+    get:
+      tags:
+      - "messenger"
+      summary: "Get a room from user logged"
+      operationId: "getRoom"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "room Id"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        401:
+          description: You cannot access other users' rooms
+        200:
+          description: A room object
+          schema:
+            type: object
+            properties:
+              roomId:
+                type: integer
+                description: The room id
+              roomName:
+                type: string
+                description: The room name
+              messages:
+                type: array
+                description: Messages
+                items:
+                  type: object
+                  description: Messagez
+                  properties:
+                    content:
+                      type: string
+                      description: message
+                    userId:
+                      type: string
+                      description: user id sent message
+      security:
+        - Bearer: []
+    put:
+      tags:
+      - "messenger"
+      summary: "Get a room from user logged"
+      operationId: "putRoom"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "room Id"
+        required: true
+        type: "integer"
+        format: "int64"
+      - in: "body"
+        name: "roomName"
+        description: "new room ame"
+        required: true
+        schema:
+          type: string
+          properties:
+            roomName:
+              type: string
+      responses:
+        401:
+          description: You must provide a new room name or you cannot manage other users' rooms
+        200:
+          description: success
+      security:
+        - Bearer: []
+    delete:
+      tags:
+      - "messenger"
+      summary: "delete a room from user logged"
+      operationId: "deleteRoom"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "room Id"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        401:
+          description: you cannot manage other users' rooms
+        200:
+          description: success
+      security:
+        - Bearer: []
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
