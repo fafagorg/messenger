@@ -6,6 +6,7 @@ const commons = require("./commons");
 const Redis = require("ioredis");
 const app = express();
 const http = require('http').createServer(app);
+const axios = require('axios');
 const io = require('socket.io')(http, {
   transports: ["websocket"],
 });
@@ -93,6 +94,7 @@ io.of("/chat").use(async (socket, next) => {
   try {
     let decoded = await commons.decodedJWT(token)
     socket.decoded = decoded;
+    socket.token = token;
     next();
   } catch (error) {
     console.log(error)
@@ -128,12 +130,27 @@ io.of("/chat").on("connection", async function (socket) {
       })
     );
 
+    var roomName = 'Producto no encontrado';
+    try{
+      roomName = Object.entries(await axios({
+        url: `${process.env.HOST_PRODUCT}/api/products/${data.roomId.split("-")[2]}`,
+        method: 'GET',
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${socket.token}`
+        }
+      }))[5][1]['name'];
+      
+    } catch (error) {
+      console.log(error)
+    }
+    
     [socket.decoded.userId, data.userId].map( async (userId) => {
       await redis.set(
         `user:${userId}:room:${data.roomId}`,
         JSON.stringify({
           last_message: data.content,
-          roomName: 'playstation 5',
+          roomName: roomName,
         })
       );
     })
