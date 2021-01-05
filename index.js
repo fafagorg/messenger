@@ -15,7 +15,7 @@ if (!process.env.NODE_ENV) dotenv.config();
 let password = (!process.env.NODE_ENV) ? undefined : process.env.REDIS_PASSWORD;
 const redis = new Redis({
   port: process.env.REDIS_PORT, // Redis port
-  host:  process.env.REDIS_HOST, // Redis host
+  host: process.env.REDIS_HOST, // Redis host
   password: password,
 })
 
@@ -64,7 +64,7 @@ http.listen(port, () => {
   console.log(`Listening at port ${port}`);
 });
 
-exports.app = app;
+module.exports = {app, redis};
 
 
 
@@ -171,3 +171,4 @@ io.of("/chat").on("connection", async function (socket) {
     );
   });
 });
+
