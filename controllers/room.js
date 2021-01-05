@@ -51,6 +51,7 @@ exports.getRoomById = async (req, res) => {
             await axios({
               url: `${process.env.HOST_PRODUCT}/api/products/${roomId.split("-")[2]}`,
               method: 'GET',
+              timeout: 1000,
               headers: {
                   "Content-Type": "application/json",
                   "Authorization": `Bearer ${req.decoded.token}`

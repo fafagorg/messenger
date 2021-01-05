@@ -11,28 +11,28 @@ describe("Rooms", () => {
         // Test create a room 
         it("should create a room with a message", async () => {
             let messages = await redis.rpush(
-                `room:1-2-0:messages`,
+                `room:1-2-1:messages`,
                 JSON.stringify({
                   userId: 1,
                   content: 'test',
                 })
               );
             let roomUser1 = await redis.set(
-            `user:1:room:1-2-0`,
+            `user:1:room:1-2-1`,
                 JSON.stringify({
                     last_message: 'test',
                     roomName: 'test',
                 })
             );
             let roomUser2 = await redis.set(
-                `user:2:room:1-2-0`,
+                `user:2:room:1-2-1`,
                     JSON.stringify({
                         last_message: 'test',
                         roomName: 'test',
                     })
                 );
-            await redis.zadd(`user:1:room`, Date.now(), '1-2-0');
-            await redis.zadd(`user:2:room`, Date.now(), '1-2-0');
+            await redis.zadd(`user:1:room`, Date.now(), '1-2-1');
+            await redis.zadd(`user:2:room`, Date.now(), '1-2-1');
 
             expect(messages).to.not.equal(0); 
             expect(roomUser1).to.equal('OK');
@@ -51,9 +51,9 @@ describe("Rooms", () => {
                   });
          });        
         // Test to get the messages of the room
-        it("should get room messages", (done) => {
-            // product 34 exist 
-             const roomId = '1-2-34';
+        it("should get room messages by id", (done) => {
+            // product 1 exist 
+             const roomId = '1-2-1';
           
              chai.request(app)
                  .get(`/v1/messenger/room/${roomId}`)
@@ -66,7 +66,7 @@ describe("Rooms", () => {
          });
          
         // Test to get the messages of the room
-        it("should not get room messages, product must exist", (done) => {
+        it("should not get room messages by id, product must exist", (done) => {
             // product 0 not exist
              const roomId = '1-2-0';
              chai.request(app)
@@ -93,7 +93,7 @@ describe("Rooms", () => {
     describe("PUT ", () => {
         // Test update a room 
         it("should update the room name", (done) => {
-            const roomId = '1-2-0';
+            const roomId = '1-2-1';
             chai.request(app)
                 .put(`/v1/messenger/room/${roomId}`)
                 .set('Authorization','Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjF9.-XWGATiWn40-XFP-yRccxl5B6rLGW-fv2auhlP5PXrE')
@@ -105,7 +105,7 @@ describe("Rooms", () => {
         });
         // Test update a room 
         it("should not update the room name. You can only update your rooms", (done) => {
-            const roomId = '3-2-0';
+            const roomId = '3-2-1';
             chai.request(app)
                 .put(`/v1/messenger/room/${roomId}`)
                 .set('Authorization','Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjF9.-XWGATiWn40-XFP-yRccxl5B6rLGW-fv2auhlP5PXrE')
@@ -119,7 +119,7 @@ describe("Rooms", () => {
     describe("DELETE ", () => {
         // Test delete a room 
         it("should delete a room", (done) => {
-            const roomId = '1-2-0';
+            const roomId = '1-2-1';
             chai.request(app)
                 .delete(`/v1/messenger/room/${roomId}`)
                 .set('Authorization','Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjF9.-XWGATiWn40-XFP-yRccxl5B6rLGW-fv2auhlP5PXrE')
@@ -130,7 +130,7 @@ describe("Rooms", () => {
         });
         // Test delete a room 
         it("should not delete a room. You can only delete your rooms", (done) => {
-            const roomId = '3-2-0';
+            const roomId = '3-2-1';
             chai.request(app)
                 .delete(`/v1/messenger/room/${roomId}`)
                 .set('Authorization','Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjF9.-XWGATiWn40-XFP-yRccxl5B6rLGW-fv2auhlP5PXrE')

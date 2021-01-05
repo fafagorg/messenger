@@ -11,13 +11,15 @@ const io = require('socket.io')(http, {
   transports: ["websocket"],
 });
 if (!process.env.NODE_ENV) dotenv.config();
+if (process.env.NODE_ENV) dotenv.config({ path: '.env.production' })
+console.log(process.env)
 
 let password = (!process.env.NODE_ENV) ? undefined : process.env.REDIS_PASSWORD;
 const redis = new Redis({
   port: process.env.REDIS_PORT, // Redis port
   host: process.env.REDIS_HOST, // Redis host
   password: password,
-})
+}) 
 
 // middleware
 app.use(express.urlencoded({ extended: true }));
@@ -136,6 +138,7 @@ io.of("/chat").on("connection", async function (socket) {
       roomName = Object.entries(await axios({
         url: `${process.env.HOST_PRODUCT}/api/products/${data.roomId.split("-")[2]}`,
         method: 'GET',
+        timeout: 1000,
         headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${socket.token}`
