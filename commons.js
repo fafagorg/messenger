@@ -12,7 +12,7 @@ const decodedJWT = async (token) => {
             "Content-Type": "application/json"
         }
     });
-    response.data.userId = Number(response.data.userId)
+    response.data.userId = response.data.userId
     return response.data
 }
 

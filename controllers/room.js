@@ -38,12 +38,32 @@ exports.getRoomById = async (req, res) => {
         let roomId = req.params.id
         let userId = req.decoded.userId
         let redis = req.redis
-        // comprobar q la otra persona existe -> integrase con cliente
-        
 
         // check your owner of the room
         if (!(roomId.split("-")[0] == userId || roomId.split("-")[1] == userId)) {
             throw {status: 401, message: "Invalid params, You cannot access other users' rooms "};
+        }
+
+        // check exist other user
+        try{
+            let otherUserId;
+            if (roomId.split('-')[0] === userId) {
+                otherUserId = roomId.split('-')[1]
+            } else {
+                otherUserId = roomId.split('-')[0]
+            }
+            await axios({
+                url: `${process.env.HOST_AUTH}/api/v1/users/${otherUserId}`,
+                method: 'GET',
+                timeout: 1000,
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${req.decoded.token}`
+                }
+            });
+        } catch (error) {
+            console.log(error.response.data)
+            throw {status: 404, message: 'Invalid data user'}
         }
 
         // check product exist
@@ -58,8 +78,8 @@ exports.getRoomById = async (req, res) => {
               }
             });
         } catch (error) {
-            console.log(error)
-            throw {status: 404, message: 'Invalid data'}
+            console.log(error.response.data)
+            throw {status: 404, message: 'Invalid data product'}
         }
     
         // cache
@@ -99,6 +119,11 @@ exports.deleteRoomById = async (req, res) => {
         }
     
         await roomService.deleteRoomById(roomId, userId, redis);
+
+        // cache 
+        await redis.del(`cache:/v1/messenger/room:user:${userId}`);
+        await redis.del(`cache:/v1/messenger/room/${roomId}:user:${userId}`);
+    
         return res.status(200).send({result: "Success"});
     } catch (error) {
         console.log(error)
@@ -123,6 +148,11 @@ exports.updateRoomName = async (req, res) => {
         if (!req.body.roomName) throw {status: 401, message: "Invalid params, You must provide a new room name"};
     
         await roomService.updateRoomName(roomId, userId, roomName, redis);
+
+        // cache 
+        await redis.del(`cache:/v1/messenger/room:user:${userId}`);
+        await redis.del(`cache:/v1/messenger/room/${roomId}:user:${userId}`);
+
         return res.status(200).send({result: "Success"});
     } catch (error) {
         console.log(error)

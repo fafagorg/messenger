@@ -6,13 +6,18 @@ const commons = require("./commons");
 const Redis = require("ioredis");
 const app = express();
 const http = require('http').createServer(app);
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
 const axios = require('axios');
 const io = require('socket.io')(http, {
   transports: ["websocket"],
 });
 if (!process.env.NODE_ENV) dotenv.config();
 if (process.env.NODE_ENV) dotenv.config({ path: '.env.production' })
-console.log(process.env)
+
+// swagger
+const swaggerDocument = YAML.load('./swagger.yaml');
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 let password = (!process.env.NODE_ENV) ? undefined : process.env.REDIS_PASSWORD;
 const redis = new Redis({
@@ -46,7 +51,7 @@ app.use("/v1/messenger/room", async (req, res, next) => {
     req.decoded.token = token;
     next();
   } catch (error) {
-    console.log('Authentication error: ', error)
+    console.log(error.response.data)
     return res.sendStatus(403);
   }
 });
@@ -100,7 +105,7 @@ io.of("/chat").use(async (socket, next) => {
     socket.token = token;
     next();
   } catch (error) {
-    console.log(error)
+    console.log(error.response.data)
     return next(new Error("Authentication error"));
   }
 });
@@ -146,7 +151,7 @@ io.of("/chat").on("connection", async function (socket) {
       }))[5][1]['name'];
       
     } catch (error) {
-      console.log(error)
+      console.log(error.response.data)
     }
     
     [socket.decoded.userId, data.userId].map( async (userId) => {

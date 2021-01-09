@@ -37,10 +37,10 @@ steps:
     entrypoint: npm
     args: ['install']
 
-  # # Test
-  # - name: node
-  #   entrypoint: npm
-  #   args: ['test']
+  # Test
+  - name: node
+    entrypoint: npm
+    args: ['test']
 
   # Verify
   - name: 'gcr.io/cloud-builders/gcloud'
