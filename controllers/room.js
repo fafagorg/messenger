@@ -69,7 +69,7 @@ exports.getRoomById = async (req, res) => {
         // check product exist
         try{
             let response = await axios({
-              url: `${process.env.HOST_PRODUCT}/api/products/${roomId.split("-")[2]}`,
+              url: `${process.env.HOST_PRODUCT}/api/v1/products/${roomId.split("-")[2]}`,
               method: 'GET',
               timeout: 1000,
               headers: {

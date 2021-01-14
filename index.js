@@ -141,7 +141,7 @@ io.of("/chat").on("connection", async function (socket) {
     let roomName = 'Producto no encontrado';
     try{
       let response = await axios({
-        url: `${process.env.HOST_PRODUCT}/api/products/${data.roomId.split("-")[2]}`,
+        url: `${process.env.HOST_PRODUCT}/api/v1/products/${data.roomId.split("-")[2]}`,
         method: 'GET',
         timeout: 1000,
         headers: {
