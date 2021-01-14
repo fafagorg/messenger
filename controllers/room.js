@@ -62,13 +62,13 @@ exports.getRoomById = async (req, res) => {
                 }
             });
         } catch (error) {
-            console.log(error.response.data)
+            console.log(error.response)
             throw {status: 404, message: 'Invalid data user'}
         }
 
         // check product exist
         try{
-            await axios({
+            let response = await axios({
               url: `${process.env.HOST_PRODUCT}/api/products/${roomId.split("-")[2]}`,
               method: 'GET',
               timeout: 1000,
@@ -77,8 +77,11 @@ exports.getRoomById = async (req, res) => {
                   "Authorization": `Bearer ${req.decoded.token}`
               }
             });
+            if (response.data.length === 0) {
+                throw {status: 404, message: 'Invalid data product'}
+            }
         } catch (error) {
-            console.log(error.response.data)
+            console.log(error.response)
             throw {status: 404, message: 'Invalid data product'}
         }
     
@@ -99,7 +102,7 @@ exports.getRoomById = async (req, res) => {
 
         return res.status(200).send(result);
     } catch (error) {
-        console.log(JSON.stringify(error))
+        console.log(error)
         if (error.status && error.message) {
             return res.status(error.status).send({error: error.message});
         }

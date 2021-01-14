@@ -51,7 +51,7 @@ app.use("/v1/messenger/room", async (req, res, next) => {
     req.decoded.token = token;
     next();
   } catch (error) {
-    console.log(error.response.data)
+    console.log(error.response)
     return res.sendStatus(403);
   }
 });
@@ -105,7 +105,7 @@ io.of("/chat").use(async (socket, next) => {
     socket.token = token;
     next();
   } catch (error) {
-    console.log(error.response.data)
+    console.log(error.response)
     return next(new Error("Authentication error"));
   }
 });
@@ -138,9 +138,9 @@ io.of("/chat").on("connection", async function (socket) {
       })
     );
 
-    var roomName = 'Producto no encontrado';
+    let roomName = 'Producto no encontrado';
     try{
-      roomName = Object.entries(await axios({
+      let response = await axios({
         url: `${process.env.HOST_PRODUCT}/api/products/${data.roomId.split("-")[2]}`,
         method: 'GET',
         timeout: 1000,
@@ -148,10 +148,14 @@ io.of("/chat").on("connection", async function (socket) {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${socket.token}`
         }
-      }))[5][1]['name'];
-      
+      })
+      if (response.data.length === 0) {
+        console.log("Fallo")
+        throw {status: 404, message: 'Invalid data product'}
+      }
+      roomName = response.data[0].name
     } catch (error) {
-      console.log(error.response.data)
+      console.log(error)
     }
     
     [socket.decoded.userId, data.userId].map( async (userId) => {
