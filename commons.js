@@ -4,6 +4,7 @@ const decodedJWT = async (token) => {
     const response = await axios({
         url: `${process.env.HOST_AUTH}/api/v1/auth/validate`,
         method: 'POST',
+        timeout: 1000,
         data: {
             token: token
         },
@@ -11,7 +12,7 @@ const decodedJWT = async (token) => {
             "Content-Type": "application/json"
         }
     });
-    response.data.userId = Number(response.data.userId)
+    response.data.userId = response.data.userId
     return response.data
 }
 
