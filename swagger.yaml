@@ -11,7 +11,7 @@ schemes:
 - "https"
 - "http"
 paths:
-  /v1/messenger/room:
+  /messenger/room:
     get:
       tags:
       - "messenger"
@@ -39,7 +39,7 @@ paths:
       security:
         - Bearer: []
         
-  /v1/messenger/room/{id}:
+  /messenger/room/{id}:
     get:
       tags:
       - "messenger"
@@ -59,6 +59,8 @@ paths:
       responses:
         401:
           description: You cannot access other users' rooms
+        404:
+          description: Invalid data user or product
         200:
           description: A room object
           schema:

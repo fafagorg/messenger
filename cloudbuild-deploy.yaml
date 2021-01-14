@@ -1,10 +1,26 @@
 steps:
+  - name: "emergyadigital/alpine-node-build"
+    entrypoint: /bin/sh
+    args:
+      - '-c'
+      - |
+        if [ $BRANCH_NAME = "main" ]; then
+          echo 6377 >> redis_port.txt;
+        elif [ $BRANCH_NAME = "release" ]; then
+          echo 6378 >> redis_port.txt;
+        else
+          echo 6376 >> redis_port.txt;
+        fi
+  
   - name: "bhgedigital/envsubst"
     entrypoint: /bin/sh
     args:
       - '-c'
       - |
-        /usr/bin/envsubst < app-${BRANCH_NAME}.yaml > app-${BRANCH_NAME}_tmp.yaml
+        redis_port=$(cat redis_port.txt)
+        export REDIS_PORT=$redis_port
+
+        /usr/bin/envsubst < .env.production.tmp > .env.production
     env:
       - "REDIS_PASSWORD=$_REDIS_PASSWORD"
 
@@ -14,7 +30,28 @@ steps:
     args:
       - '-c'
       - |
-        cat app-${BRANCH_NAME}_tmp.yaml
+        cat .env.production
+ 
+  # Install
+  - name: node
+    entrypoint: npm
+    args: ['install']
 
+  # Test
+  - name: node
+    entrypoint: npm
+    args: ['test']
+
+  # Verify
   - name: 'gcr.io/cloud-builders/gcloud'
-    args: ['app', 'deploy', 'app-${BRANCH_NAME}_tmp.yaml', '--no-stop-previous-version', '--version=messenger-${BRANCH_NAME}']
+    entrypoint: /bin/sh
+    args:
+      - '-c'
+      - |
+        rm -r node_modules
+
+  # Deploy
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args: ['app', 'deploy', 'app.yaml', '--no-stop-previous-version', '--version=messenger-${BRANCH_NAME}']
+
+timeout: 600s
