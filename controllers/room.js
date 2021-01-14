@@ -126,6 +126,10 @@ exports.deleteRoomById = async (req, res) => {
         // cache 
         await redis.del(`cache:/v1/messenger/room:user:${userId}`);
         await redis.del(`cache:/v1/messenger/room/${roomId}:user:${userId}`);
+        // cache 
+        let recipientUserId = (roomId.split("-")[0] == userId) ? roomId.split('-')[1] : roomId.split("-")[0];
+        await redis.del(`cache:/v1/messenger/room:user:${recipientUserId}`);
+        await redis.del(`cache:/v1/messenger/room/${roomId}:user:${recipientUserId}`);
     
         return res.status(200).send({result: "Success"});
     } catch (error) {
