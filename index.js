@@ -19,12 +19,10 @@ if (process.env.NODE_ENV) dotenv.config({ path: '.env.production' })
 const swaggerDocument = YAML.load('./swagger.yaml');
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-let password = (!process.env.NODE_ENV) ? undefined : process.env.REDIS_PASSWORD;
 const redis = new Redis({
   port: process.env.REDIS_PORT, // Redis port
   host: process.env.REDIS_HOST, // Redis host
-  password: password,
-}) 
+})
 
 // middleware
 app.use(express.urlencoded({ extended: true }));

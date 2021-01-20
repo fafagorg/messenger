@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: messenger-pro
+  namespace: pro
+  labels:
+    app: messenger-pro
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: messenger-pro
+  template:
+    metadata:
+      labels:
+        app: messenger-pro
+    spec:
+      containers:
+      - name: messenger
+        image: gcr.io/google-samples/hello-app:1.0
+        ports:
+        - containerPort: 8080

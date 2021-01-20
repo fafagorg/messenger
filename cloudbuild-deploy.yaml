@@ -1,28 +1,10 @@
-steps:
-  - name: "emergyadigital/alpine-node-build"
-    entrypoint: /bin/sh
-    args:
-      - '-c'
-      - |
-        if [ $BRANCH_NAME = "main" ]; then
-          echo 6377 >> redis_port.txt;
-        elif [ $BRANCH_NAME = "release" ]; then
-          echo 6378 >> redis_port.txt;
-        else
-          echo 6376 >> redis_port.txt;
-        fi
-  
+steps:  
   - name: "bhgedigital/envsubst"
     entrypoint: /bin/sh
     args:
       - '-c'
       - |
-        redis_port=$(cat redis_port.txt)
-        export REDIS_PORT=$redis_port
-
         /usr/bin/envsubst < .env.production.tmp > .env.production
-    env:
-      - "REDIS_PASSWORD=$_REDIS_PASSWORD"
 
   # Verify
   - name: 'gcr.io/cloud-builders/gcloud'
@@ -32,26 +14,33 @@ steps:
       - |
         cat .env.production
  
-  # Install
-  - name: node
-    entrypoint: npm
-    args: ['install']
-
-  # Test
-  - name: node
-    entrypoint: npm
-    args: ['test']
-
-  # Verify
-  - name: 'gcr.io/cloud-builders/gcloud'
+    # Install
+  - name: "gcr.io/fis-us/curl-nodejs-kubectl-gcloud"
     entrypoint: /bin/sh
     args:
       - '-c'
       - |
-        rm -r node_modules
+        npm install
 
-  # Deploy
-  - name: 'gcr.io/cloud-builders/gcloud'
-    args: ['app', 'deploy', 'app.yaml', '--no-stop-previous-version', '--version=messenger-${BRANCH_NAME}']
+    # Test
+  - name: "gcr.io/fis-us/curl-nodejs-kubectl-gcloud"
+    entrypoint: /bin/sh
+    args:
+      - '-c'
+      - |
+        curl -o account.json https://storage.googleapis.com/fis-kubeconfig/account.json
+        gcloud auth activate-service-account fis-deploy@fis-us.iam.gserviceaccount.com --key-file=account.json
+        gcloud container clusters get-credentials cluster-5 --region europe-west1-b
+        kubectl port-forward deployment/messenger-pro 6379:6379 -n pro &
+        npm test
+
+  # docker build and push
+  - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: /bin/sh
+    args:
+      - '-c'
+      - |
+        docker build -t gcr.io/fis-us/messenger-$BRANCH:$SHORT_SHA .
+        docker push gcr.io/fis-us/messenger-$BRANCH:$SHORT_SHA
 
 timeout: 600s
