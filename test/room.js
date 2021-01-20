@@ -2,10 +2,85 @@
 var expect = require('chai').expect;
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const axios = require('axios');
 const {app, redis} = require('../index')
+const nock = require('nock')
 chai.use(chaiHttp);
 chai.should();
+
+let token = "test"
+
+
+beforeEach(() => {
+    nock(process.env.HOST_AUTH)
+        .post('/api/v1/auth/validate')
+        .reply(200, {
+            "userId": "string"
+    });
+
+    nock(process.env.HOST_AUTH)
+        .post('/api/v1/auth/login', {
+            "username": "string",
+            "password": "string"
+        })
+        .reply(200, {
+            data: {
+                token: "test"
+            }
+    });
+
+    nock(process.env.HOST_PRODUCT)
+        .get('/api/v1/products/1')
+        .reply(200, {
+            
+    });
+
+    nock(process.env.HOST_PRODUCT)
+        .get('/api/v1/products/0')
+        .reply(404, {
+            
+    });
+
+    nock(process.env.HOST_PRODUCT)
+        .post('/api/v1/products' , {
+            "name": "string",
+            "category": "string",
+            "price": 0,
+            "seller": 0,
+            "id": 1
+        })
+        .reply(200, {
+            
+    });
+        
+    nock(process.env.HOST_AUTH)
+        .get('/api/v1/users/string')
+        .reply(200, {
+    });
+
+    nock(process.env.HOST_AUTH)
+        .get('/api/v1/users/string2')
+        .reply(200, {
+    });
+
+    nock(process.env.HOST_AUTH)
+        .get('/api/v1/users/string0')
+        .reply(404, {
+    });
+
+    nock((process.env.HOST_AUTH))
+
+        .post('/api/v1/auth/register', {
+                "username": "string",
+                "name": "string",
+                "surname": "string",
+                "email": "string",
+                "phone": "654343434",
+                "password": "string"
+            })
+        .reply(200, {
+    });
+    
+});
 
 describe("Rooms", () => {
     describe("", () => {
@@ -39,91 +114,6 @@ describe("Rooms", () => {
             expect(messages).to.not.equal(0); 
             expect(roomUser1).to.equal('OK');
             expect(roomUser2).to.equal('OK');
-        });
-
-        it("create product 1", async () => {
-            // create product 0
-            try{
-                await axios({
-                    url: `${process.env.HOST_AUTH}/api/v1/auth/register`,
-                    method: 'POST',
-                    timeout: 1000,
-                    data: {
-                        "username": "string",
-                        "name": "string",
-                        "surname": "string",
-                        "email": "string",
-                        "phone": "654343434",
-                        "password": "string"
-                    },
-                    headers: {
-                        "Content-Type": "application/json",
-                    }
-                });
-            } catch (error) {
-                console.log(error.response.data)
-            }
-
-            try{
-                await axios({
-                    url: `${process.env.HOST_AUTH}/api/v1/auth/register`,
-                    method: 'POST',
-                    timeout: 1000,
-                    data: {
-                        "username": "string2",
-                        "name": "string2",
-                        "surname": "string2",
-                        "email": "string2",
-                        "phone": "654343435",
-                        "password": "string2"
-                    },
-                    headers: {
-                        "Content-Type": "application/json",
-                    }
-                });
-            } catch (error) {
-                console.log(error.response.data)
-            }
-
-            try {
-                token = await axios({
-                    url: `${process.env.HOST_AUTH}/api/v1/auth/login`,
-                    method: 'POST',
-                    timeout: 1000,
-                    data: {
-                        "username": "string",
-                        "password": "string"
-                    },
-                    headers: {
-                        "Content-Type": "application/json",
-                    }
-                });
-                token = token.data.token
-            } catch (error) {
-                console.log(error.response.data)
-            }
-
-            try {
-                let product = await axios({
-                    url: `${process.env.HOST_PRODUCT}/api/products`,
-                    method: 'POST',
-                    timeout: 1000,
-                    data: {
-                        "name": "string",
-                        "category": "string",
-                        "price": 0,
-                        "seller": 0,
-                        "id": 1
-                    },
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
-                    }
-                });
-                console.log(product.data)
-            } catch (error) {
-                console.log(error.response.data)
-            }
         });
 
         // Test to get all rooms of user

@@ -15,23 +15,20 @@ steps:
         cat .env.production
  
     # Install
-  - name: "gcr.io/fis-us/curl-nodejs-kubectl-gcloud"
+  - name: "gcr.io/fis-us/docker_node"
     entrypoint: /bin/sh
     args:
       - '-c'
-      - |
+      - 
         npm install
 
     # Test
-  - name: "gcr.io/fis-us/curl-nodejs-kubectl-gcloud"
+  - name: "gcr.io/fis-us/docker_node"
     entrypoint: /bin/sh
     args:
       - '-c'
       - |
-        curl -o account.json https://storage.googleapis.com/fis-kubeconfig/account.json
-        gcloud auth activate-service-account fis-deploy@fis-us.iam.gserviceaccount.com --key-file=account.json
-        gcloud container clusters get-credentials cluster-5 --region europe-west1-b
-        kubectl port-forward deployment/messenger-pro 6379:6379 -n pro &
+        docker run -d -p 6379:6379 redis:6.0.9-alpine
         npm test
 
   # docker build and push

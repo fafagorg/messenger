@@ -1,20 +1,8 @@
 FROM alpine:3.9
 
-# node, curl
-RUN apk add --update \
-python \
-curl \
-which \
-bash \
-curl
-
-# kubectl
-RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.1/bin/linux/amd64/kubectl
-RUN chmod u+x kubectl && mv kubectl /bin/kubectl
-
-# gcloud
-RUN curl -sSL https://sdk.cloud.google.com | bash
-ENV PATH $PATH:/root/google-cloud-sdk/bin
+# docker
+RUN apk add --update docker openrc npm
+RUN rc-update add docker boot
 
 # nodejs, npm
 ENV ALPINE_MIRROR "http://dl-cdn.alpinelinux.org/alpine"

@@ -63,6 +63,7 @@ exports.getRoomById = async (req, res) => {
             });
         } catch (error) {
             console.log(error.response)
+
             throw {status: 404, message: 'Invalid data user'}
         }
 
