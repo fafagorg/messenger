@@ -37,7 +37,7 @@ steps:
     args:
       - '-c'
       - |
-        /usr/bin/envsubst < .env.production.tmp > .env.production
+        /usr/bin/envsubst < .env.$BRANCH_NAME.tmp > .env.production
     env:
     - 'REDIS_HOST=localhost'
 
