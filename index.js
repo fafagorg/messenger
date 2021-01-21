@@ -44,12 +44,13 @@ app.use("/v1/messenger/room", async (req, res, next) => {
 
   try {
     let token = req.headers.authorization.replace('Bearer ', '');
+    console.log(token)
     let decoded = await commons.decodedJWT(token)
+    console.log(decoded)
     req.decoded = decoded;
     req.decoded.token = token;
     next();
   } catch (error) {
-    console.log(error.response)
     return res.sendStatus(403);
   }
 });

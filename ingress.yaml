@@ -9,21 +9,21 @@ spec:
   - host: "messenger.fafago-dev.alexgd.es"
     http:
       paths:
-      - path: /
+      - path: /*
         backend:
           serviceName: messenger-develop
           servicePort: 8080
   - host: "messenger.fafago-pre.alexgd.es"
     http:
       paths:
-      - path: /
+      - path: /*
         backend:
           serviceName: messenger-release
           servicePort: 8080
   - host: "messenger.fafago-pro.alexgd.es"
     http:
       paths:
-      - path: /
+      - path: /*
         backend:
           serviceName: messenger-main
           servicePort: 8080
@@ -31,43 +31,43 @@ spec:
   - host: "auth.fafago-dev.alexgd.es"
     http:
       paths:
-      - path: /
+      - path: /*
         backend:
           serviceName: auth-develop
-          servicePort: 8080
+          servicePort: 80
   - host: "auth.fafago-pre.alexgd.es"
     http:
       paths:
-      - path: /
+      - path: /*
         backend:
           serviceName: auth-release
-          servicePort: 8080
+          servicePort: 80
   - host: "auth.fafago-pro.alexgd.es"
     http:
       paths:
-      - path: /
+      - path: /*
         backend:
           serviceName: auth-main
-          servicePort: 8080
+          servicePort: 80
   #PRODUCTS
   - host: "products.fafago-dev.alexgd.es"
     http:
       paths:
-      - path: /
+      - path: /*
         backend:
           serviceName: products-develop
           servicePort: 8080
   - host: "products.fafago-pre.alexgd.es"
     http:
       paths:
-      - path: /
+      - path: /*
         backend:
           serviceName: products-release
           servicePort: 8080
   - host: "products.fafago-pro.alexgd.es"
     http:
       paths:
-      - path: /
+      - path: /*
         backend:
           serviceName: products-main
           servicePort: 8080
@@ -75,21 +75,43 @@ spec:
   - host: "reviews.fafago-dev.alexgd.es"
     http:
       paths:
-      - path: /
+      - path: /*
         backend:
           serviceName: reviews-develop
-          servicePort: 8080
+          servicePort: 80
   - host: "reviews.fafago-pre.alexgd.es"
     http:
       paths:
-      - path: /
+      - path: /*
         backend:
           serviceName: reviews-release
-          servicePort: 8080
+          servicePort: 80
   - host: "reviews.fafago-pro.alexgd.es"
     http:
       paths:
-      - path: /
+      - path: /*
         backend:
           serviceName: reviews-main
+          servicePort: 80
+  #FRONTEND
+  - host: "frontend.fafago-dev.alexgd.es"
+    http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: frontend-develop
+          servicePort: 8080
+  - host: "frontend.fafago-pre.alexgd.es"
+    http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: frontend-release
+          servicePort: 8080
+  - host: "frontend.fafago-pro.alexgd.es"
+    http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: frontend-main
           servicePort: 8080

@@ -8,9 +8,9 @@ steps:
         /usr/bin/envsubst < k8s/deployment.tmp.yaml > k8s/deployment.yaml
         /usr/bin/envsubst < k8s/service.tmp.yaml > k8s/service.yaml
     env:
-    - 'COMMIT=$SHORT_SHA'
-    - 'BRANCH_NAME=$BRANCH_NAME'
-    - 'REDIS_HOST=35.184.7.255'
+      - 'COMMIT=$SHORT_SHA'
+      - 'BRANCH_NAME=$BRANCH_NAME'
+      - 'REDIS_HOST=35.184.7.255'
 
   # Verify
   - name: 'gcr.io/cloud-builders/gcloud'
