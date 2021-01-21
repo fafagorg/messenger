@@ -12,4 +12,3 @@ spec:
       protocol: TCP
       targetPort: 8080
       name: messenger
-      nodePort: 30001

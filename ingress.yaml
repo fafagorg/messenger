@@ -32,13 +32,13 @@ apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: ingress
-  namespace: master
+  namespace: main
 spec:
   rules:
-  - host: "messenger.master.sidebrand.es"
+  - host: "messenger.main.sidebrand.es"
     http:
       paths:
       - path: /
         backend:
-          serviceName: messenger-master
+          serviceName: messenger-main
           servicePort: 8080
