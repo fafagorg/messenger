@@ -69,7 +69,7 @@ steps:
       - '-c'
       - |
         gcloud container clusters get-credentials cluster-1 --zone europe-west1-b --project fis-us
-        kubectl rollout status deployment.apps/messenger-$BRANCH_NAME -n $BRANCH_NAME
+        kubectl rollout status deployment.apps/messenger-$BRANCH_NAME -n app
     env:
       - CLOUDSDK_COMPUTE_ZONE=europe-west1-b
       - CLOUDSDK_CONTAINER_CLUSTER=cluster-1
