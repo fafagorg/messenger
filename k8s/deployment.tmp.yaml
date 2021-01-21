@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: messenger
-        image: gcr.io/fis-us/messenger-develop:$COMMIT
+        image: gcr.io/fis-us/messenger-$BRANCH_NAME:$COMMIT
         ports:
         - containerPort: 8080
         env:
