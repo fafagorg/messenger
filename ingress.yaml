@@ -1,0 +1,44 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: ingress
+  namespace: develop
+spec:
+  rules:
+  - host: "messenger.develop.sidebrand.es"
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: messenger-develop
+          servicePort: 8080
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: ingress
+  namespace: release
+spec:
+  rules:
+  - host: "messenger.release.sidebrand.es"
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: messenger-release
+          servicePort: 8080
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: ingress
+  namespace: master
+spec:
+  rules:
+  - host: "messenger.master.sidebrand.es"
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: messenger-master
+          servicePort: 8080

@@ -1,28 +1,15 @@
-steps:
-  - name: "emergyadigital/alpine-node-build"
-    entrypoint: /bin/sh
-    args:
-      - '-c'
-      - |
-        if [ $BRANCH_NAME = "main" ]; then
-          echo 6377 >> redis_port.txt;
-        elif [ $BRANCH_NAME = "release" ]; then
-          echo 6378 >> redis_port.txt;
-        else
-          echo 6376 >> redis_port.txt;
-        fi
-  
+steps:  
   - name: "bhgedigital/envsubst"
     entrypoint: /bin/sh
     args:
       - '-c'
       - |
-        redis_port=$(cat redis_port.txt)
-        export REDIS_PORT=$redis_port
-
         /usr/bin/envsubst < .env.production.tmp > .env.production
+        /usr/bin/envsubst < infra/deployment.tmp.yaml > infra/deployment.yaml
+        /usr/bin/envsubst < infra/service.tmp.yaml > infra/service.yaml
     env:
-      - "REDIS_PASSWORD=$_REDIS_PASSWORD"
+    - 'BRANCH_NAME=$BRANCH_NAME'
+    - 'REDIS_HOST=35.184.7.255'
 
   # Verify
   - name: 'gcr.io/cloud-builders/gcloud'
@@ -31,27 +18,60 @@ steps:
       - '-c'
       - |
         cat .env.production
+        cat infra/deployment.yaml
+        cat infra/service.yaml
  
-  # Install
-  - name: node
+    # Install
+  - name: "node"
     entrypoint: npm
-    args: ['install']
+    args: ["install"]
 
-  # Test
-  - name: node
+    # Test
+  - name: "node"
     entrypoint: npm
-    args: ['test']
+    args: ["test"]
 
-  # Verify
-  - name: 'gcr.io/cloud-builders/gcloud'
+  - name: "bhgedigital/envsubst"
     entrypoint: /bin/sh
     args:
       - '-c'
       - |
-        rm -r node_modules
+        /usr/bin/envsubst < .env.production.tmp > .env.production
+    env:
+    - 'REDIS_HOST=localhost'
 
-  # Deploy
-  - name: 'gcr.io/cloud-builders/gcloud'
-    args: ['app', 'deploy', 'app.yaml', '--no-stop-previous-version', '--version=messenger-${BRANCH_NAME}']
+  # docker build and push
+  - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: /bin/sh
+    args:
+      - '-c'
+      - |
+        docker build -t gcr.io/fis-us/messenger-$BRANCH_NAME:$SHORT_SHA .
+        docker push gcr.io/fis-us/messenger-$BRANCH_NAME:$SHORT_SHA
+
+  # kubectl apply
+  - name: 'gcr.io/cloud-builders/kubectl'
+    entrypoint: /bin/sh
+    args:
+      - '-c'
+      - |
+        gcloud container clusters get-credentials cluster-1 --zone europe-west1-b --project fis-us
+        kubectl apply -f infra/deployment.yaml
+        kubectl apply -f infra/service.yaml
+    env:
+      - CLOUDSDK_COMPUTE_ZONE=europe-west1-b
+      - CLOUDSDK_CONTAINER_CLUSTER=cluster-1
+
+  # kubectl rollout status
+  - name: 'gcr.io/cloud-builders/kubectl'
+    entrypoint: /bin/sh
+    args:
+      - '-c'
+      - |
+        gcloud container clusters get-credentials cluster-1 --zone europe-west1-b --project fis-us
+        kubectl rollout status deployment.apps/messenger-$BRANCH_NAME -n $BRANCH_NAME
+    env:
+      - CLOUDSDK_COMPUTE_ZONE=europe-west1-b
+      - CLOUDSDK_CONTAINER_CLUSTER=cluster-1
 
 timeout: 600s

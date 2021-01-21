@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: messenger-$BRANCH_NAME
+  namespace: $BRANCH_NAME
+  labels:
+    app: messenger-$BRANCH_NAME
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: messenger-$BRANCH_NAME
+  template:
+    metadata:
+      labels:
+        app: messenger-$BRANCH_NAME
+    spec:
+      containers:
+      - name: messenger
+        image: gcr.io/fis-us/messenger-develop:99400d3
+        ports:
+        - containerPort: 8080
+        env:
+         - name: NODE_ENV
+           value: "production"
+      - name: redis
+        image: redis:6.0.9-alpine
+        ports:
+        - containerPort: 6379
