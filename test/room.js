@@ -7,9 +7,6 @@ const nock = require('nock')
 chai.use(chaiHttp);
 chai.should();
 
-let token = "test"
-
-
 beforeEach(() => {
     nock(process.env.HOST_AUTH)
         .post('/api/v1/auth/validate')
@@ -84,7 +81,7 @@ beforeEach(() => {
 
 describe("Rooms", () => {
     describe("", () => {
-        let token;
+        let token = "test";
         // Test create a room 
         it("should create a room with a message", async () => {
             let messages = await redis.rpush(
