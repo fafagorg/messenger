@@ -19,12 +19,10 @@ if (process.env.NODE_ENV) dotenv.config({ path: '.env.production' })
 const swaggerDocument = YAML.load('./swagger.yaml');
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-let password = (!process.env.NODE_ENV) ? undefined : process.env.REDIS_PASSWORD;
 const redis = new Redis({
   port: process.env.REDIS_PORT, // Redis port
   host: process.env.REDIS_HOST, // Redis host
-  password: password,
-}) 
+})
 
 // middleware
 app.use(express.urlencoded({ extended: true }));
@@ -51,7 +49,7 @@ app.use("/v1/messenger/room", async (req, res, next) => {
     req.decoded.token = token;
     next();
   } catch (error) {
-    console.log(error.response.data)
+    console.log(error.response)
     return res.sendStatus(403);
   }
 });
@@ -105,7 +103,7 @@ io.of("/chat").use(async (socket, next) => {
     socket.token = token;
     next();
   } catch (error) {
-    console.log(error.response.data)
+    console.log(error.response)
     return next(new Error("Authentication error"));
   }
 });
@@ -138,20 +136,24 @@ io.of("/chat").on("connection", async function (socket) {
       })
     );
 
-    var roomName = 'Producto no encontrado';
+    let roomName = 'Producto no encontrado';
     try{
-      roomName = Object.entries(await axios({
-        url: `${process.env.HOST_PRODUCT}/api/products/${data.roomId.split("-")[2]}`,
+      let response = await axios({
+        url: `${process.env.HOST_PRODUCT}/api/v1/products/${data.roomId.split("-")[2]}`,
         method: 'GET',
         timeout: 1000,
         headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${socket.token}`
         }
-      }))[5][1]['name'];
-      
+      })
+      if (response.data.length === 0) {
+        console.log("Fallo")
+        throw {status: 404, message: 'Invalid data product'}
+      }
+      roomName = response.data[0].name
     } catch (error) {
-      console.log(error.response.data)
+      console.log(error)
     }
     
     [socket.decoded.userId, data.userId].map( async (userId) => {

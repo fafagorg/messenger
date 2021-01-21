@@ -62,14 +62,15 @@ exports.getRoomById = async (req, res) => {
                 }
             });
         } catch (error) {
-            console.log(error.response.data)
+            console.log(error.response)
+
             throw {status: 404, message: 'Invalid data user'}
         }
 
         // check product exist
         try{
-            await axios({
-              url: `${process.env.HOST_PRODUCT}/api/products/${roomId.split("-")[2]}`,
+            let response = await axios({
+              url: `${process.env.HOST_PRODUCT}/api/v1/products/${roomId.split("-")[2]}`,
               method: 'GET',
               timeout: 1000,
               headers: {
@@ -77,8 +78,11 @@ exports.getRoomById = async (req, res) => {
                   "Authorization": `Bearer ${req.decoded.token}`
               }
             });
+            if (response.data.length === 0) {
+                throw {status: 404, message: 'Invalid data product'}
+            }
         } catch (error) {
-            console.log(error.response.data)
+            console.log(error.response)
             throw {status: 404, message: 'Invalid data product'}
         }
     
@@ -99,7 +103,7 @@ exports.getRoomById = async (req, res) => {
 
         return res.status(200).send(result);
     } catch (error) {
-        console.log(JSON.stringify(error))
+        console.log(error)
         if (error.status && error.message) {
             return res.status(error.status).send({error: error.message});
         }
@@ -123,6 +127,10 @@ exports.deleteRoomById = async (req, res) => {
         // cache 
         await redis.del(`cache:/v1/messenger/room:user:${userId}`);
         await redis.del(`cache:/v1/messenger/room/${roomId}:user:${userId}`);
+        // cache 
+        let recipientUserId = (roomId.split("-")[0] == userId) ? roomId.split('-')[1] : roomId.split("-")[0];
+        await redis.del(`cache:/v1/messenger/room:user:${recipientUserId}`);
+        await redis.del(`cache:/v1/messenger/room/${roomId}:user:${recipientUserId}`);
     
         return res.status(200).send({result: "Success"});
     } catch (error) {
