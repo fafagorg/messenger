@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: messenger-$BRANCH_NAME
-  namespace: $BRANCH_NAME
+  namespace: app
   labels:
     app: messenger-$BRANCH_NAME
 spec:
