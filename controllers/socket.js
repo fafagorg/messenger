@@ -1,4 +1,4 @@
-exports.socket = function() {
+exports.socket = function(io, redis, axios) {
 
     // Authentication middleware
     io.of("/chat").use(async (socket, next) => {

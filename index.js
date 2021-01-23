@@ -72,7 +72,7 @@ http.listen(port, () => {
 });
 
 // socket
-socket.socket
+socket.socket(io, redis, axios)
 
 module.exports = {app, redis};
 
