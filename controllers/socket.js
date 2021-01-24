@@ -1,3 +1,5 @@
+const commons = require("../commons");
+
 exports.socket = function(io, redis, axios) {
 
     // Authentication middleware
