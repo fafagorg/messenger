@@ -2,13 +2,12 @@ swagger: "2.0"
 info:
   version: "1.0.0"
   title: "Messenger API"
-host: "messenger-develop-dot-fis-us.ew.r.appspot.com"
+host: "messenger.fafago-dev.alexgd.es"
 basePath: "/v1"
 tags:
 - name: "messenger"
   description: "Everything about messenger"
 schemes:
-- "https"
 - "http"
 paths:
   /messenger/room:

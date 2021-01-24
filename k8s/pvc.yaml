@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: messenger-main-redis
+  namespace: app
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/var/data/messenger/pro"
+  claimRef:
+    name: messenger-main-redis
+    namespace: app
+---
+apiVersion: apps/v1  
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: messenger-main-redis
+  namespace: app
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Mi
+---
+apiVersion: apps/v1
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: messenger-release-redis
+  namespace: app
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/var/data/messenger/pre"
+  claimRef:
+    name: messenger-release-redis
+    namespace: app
+---
+apiVersion: apps/v1  
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: messenger-release-redis
+  namespace: app
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Mi
+---
+apiVersion: apps/v1
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: messenger-develop-redis
+  namespace: app
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/var/data/messenger/dev"
+  claimRef:
+    name: messenger-develop-redis
+    namespace: app
+---
+apiVersion: apps/v1  
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: messenger-develop-redis
+  namespace: app
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Mi
+---
