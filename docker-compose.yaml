@@ -10,7 +10,7 @@ services:
         source: redis-data
         target: /data
   express:
-    command: "npm run test_local"
+    
     build:
       context: .
       dockerfile: Dockerfile_local

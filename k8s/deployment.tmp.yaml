@@ -27,3 +27,10 @@ spec:
         image: redis:6.0.9-alpine
         ports:
         - containerPort: 6379
+        volumeMounts:
+          - mountPath: "/data"
+            name: messenger-$BRANCH_NAME
+      volumes:
+        - name: messenger-$BRANCH_NAME
+          persistentVolumeClaim:
+            claimName: messenger-$BRANCH_NAME-redis
