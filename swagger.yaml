@@ -89,7 +89,7 @@ paths:
     put:
       tags:
       - "messenger"
-      summary: "Get a room from user logged"
+      summary: "Rename a room from user logged"
       operationId: "putRoom"
       consumes:
       - "application/json"
@@ -121,7 +121,7 @@ paths:
     delete:
       tags:
       - "messenger"
-      summary: "delete a room from user logged"
+      summary: "Delete a room from user logged"
       operationId: "deleteRoom"
       consumes:
       - "application/json"
