@@ -5,18 +5,18 @@ exports.socket = function(io, redis, axios) {
     // Authentication middleware
     io.of("/chat").use(async (socket, next) => {
         if (!(socket.handshake.query && socket.handshake.query.token)) {
-        next(new Error("Authentication error"));
+            next(new Error("Authentication error"));
         }
     
         let token = socket.handshake.query.token.replace('Bearer ', '');
         try {
-        let decoded = await commons.decodedJWT(token)
-        socket.decoded = decoded;
-        socket.token = token;
-        next();
+            let decoded = await commons.decodedJWT(token)
+            socket.decoded = decoded;
+            socket.token = token;
+            next();
         } catch (error) {
-        console.log(error.response)
-        return next(new Error("Authentication error"));
+            console.log(error.response)
+            return next(new Error("Authentication error"));
         }
     });
     
