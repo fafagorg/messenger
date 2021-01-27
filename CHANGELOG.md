@@ -1,4 +1,14 @@
-# 1.1.0 (2021-01-26)
+## [1.1.1](https://github.com/fafagorg/messenger/compare/v1.1.0...v1.1.1) (2021-01-27)
+
+
+### Bug Fixes
+
+* documentation ([e6ce4a1](https://github.com/fafagorg/messenger/commit/e6ce4a190a97c04919e84b8c89ec7be7dce374f6))
+* documentation ([d7906dc](https://github.com/fafagorg/messenger/commit/d7906dcfcd90c4dbfb5b57c17c9dd0f9acca1d86))
+
+
+
+# [1.1.0](https://github.com/fafagorg/messenger/compare/9067faccb8a5809c8977c506073827d1c0e86e30...v1.1.0) (2021-01-26)
 
 
 ### Bug Fixes
